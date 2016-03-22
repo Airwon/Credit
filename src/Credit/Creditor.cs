@@ -44,7 +44,7 @@ namespace Credit
       List<LiborWibor> rows;
       using (var context = new CreditContext())
       {
-        rows = context.LiborWibor.Where(l => l.Year >= year && l.Month >= month).ToList();  ///wartosci od danej daty
+        rows = context.LiborWibor.Where(l => l.Year >= year && l.Month >= month).ToList();//.Sum(x => x.RatePlnChf).ToList();  ///SUMAOWANIE wartosci!!!!!!
       }
 
       List<LiborWibor> rows0;
@@ -57,7 +57,7 @@ namespace Credit
       foreach (var row1 in rows0)
       {
 
-        kurs_chf.Text = Convert.ToString(System.Decimal.Round(ToDecimal(row1.RatePlnChf), 8));
+        kurs_chf.Text = row1.RatePlnChf.ToString(".##");
       }
 
       string dateString1 = mc_aktualny.Text;
@@ -71,38 +71,53 @@ namespace Credit
       var t2 = rows.Where(z => z.Year == year1 && z.Month == month1).ToList();
       foreach (var row in t2)
       {
-        kurs_chf_aktualny.Text = row.RatePlnChf;
+        kurs_chf_aktualny.Text = row.RatePlnChf.ToString(".##");
         saldo_kapitalu_chf_aktualny.Text = "";
         saldo_kap_pln.Text = "";
       }
 
-      kwota_kredytu_chf.Text = (Convert.ToString(System.Decimal.Round((ToDecimal(kwota_kredytu_pln.Text)) / (ToDecimal(kurs_chf.Text)), 0)));
+      kwota_kredytu_chf.Text = (ToDecimal(kwota_kredytu_pln.Text) / (ToDecimal(kurs_chf.Text))).ToString(".##");
 
-
+      double a = 0.02;
       int i = 1;
-      var result = rows.Where(l => l.Id <= ToInt32((okres_kredytowania.Text))).Select(l => new CreditForms
+
+      //////
+      var result = rows.Where(l => l.Id   <= ToInt32((okres_kredytowania.Text))).Select(l => new CreditForms
       {
 
         Nrraty = i++,
-        Year = l.Year,
-        Month = l.Month,
-        Libor3Mchf = l.Libor3MChf,
-        Marza = 2,
-        OdsetkiChf = System.Decimal.Round(ToDecimal(Finansial.IPmt((ToDouble(l.Libor3MChf) + 0.02) / 12, 1, ToInt32(okres_kredytowania.Text) - i - 1, -(ToDouble(kwota_kredytu_chf.Text)))), 2),
 
-        KapitalChf = System.Decimal.Round(ToDecimal(Finansial.Ppmt((ToDouble(l.Libor3MChf) + 0.02) / 12, 1, ToInt32(okres_kredytowania.Text) - i - 1, (ToDouble(kwota_kredytu_chf.Text)))), 2),
-        SaldokapitaluChf = ToDecimal(kwota_kredytu_chf.Text) -
-        (System.Decimal.Round(ToDecimal(Finansial.Ppmt((ToDouble(l.Libor3MChf) + 0.02) / 12, 1, ToInt32(okres_kredytowania.Text) - i - 1, (ToDouble(kwota_kredytu_chf.Text)))), 2)),
-        KursChf = Convert.ToString(decimal.Round(ToDecimal(l.RatePlnChf), 4), CultureInfo.CurrentCulture),
-        Wibor3m = Convert.ToString(decimal.Round(ToDecimal(l.Wibor3M), 4), CultureInfo.CurrentCulture),
+        Year = l.Year,
+
+        Month = l.Month,
+
+        Libor3Mchf = l.Libor3MChf.ToString(),
+
+        Marza = 2,
+
+        OdsetkiChf = Finansial.IPmt((l.Libor3MChf1 + a) / 12, 1, ToInt32(okres_kredytowania.Text) - i - 1, -(ToDouble(kwota_kredytu_chf.Text))).ToString(".##"),
+
+        KapitalChf = (Finansial.Ppmt((l.Libor3MChf1 + a) / 12, 1, ToInt32(okres_kredytowania.Text) - i - 1, (ToDouble(kwota_kredytu_chf.Text)))).ToString(".##"),
+
+        SaldokapitaluChf = (ToDecimal(kwota_kredytu_chf.Text) -
+        (ToDecimal(Finansial.Ppmt((l.Libor3MChf1 + a) / 12, 1, ToInt32(okres_kredytowania.Text) - i - 1, (ToDouble(kwota_kredytu_chf.Text)))))).ToString(".##"),
+
+        KursChf = l.RatePlnChf.ToString(".##"),
+
+        Wibor3m = l.Wibor3M.ToString(".##"),
+
         Marza1 = 2,
-        WplataPln = System.Decimal.Round(decimal.Round(ToDecimal(l.RatePlnChf), 2) * (ToDecimal(Finansial.Pmt((ToDouble(l.Libor3MChf) + 0.02) / 12, ToInt32(okres_kredytowania.Text) - i - 1, -(ToDouble(kwota_kredytu_chf.Text))))), 2),
-        OdsetkiPln = System.Decimal.Round(ToDecimal(kwota_kredytu_pln.Text) * ToDecimal((ToDouble(l.Wibor3M) + 0.02) / 12), 2),
-        KapitalPln = System.Decimal.Round(decimal.Round(ToDecimal(l.RatePlnChf), 2) * (ToDecimal(Finansial.Pmt((ToDouble(l.Libor3MChf) + 0.02) / 12, ToInt32(okres_kredytowania.Text) - i - 1, -(ToDouble(kwota_kredytu_chf.Text))))), 2) -
-        System.Decimal.Round(ToDecimal(kwota_kredytu_pln.Text) * ToDecimal((ToDouble(l.Wibor3M) + 0.02) / 12), 2),
+
+        WplataPln = (ToDecimal(l.RatePlnChf) * (ToDecimal(Finansial.Pmt((l.Libor3MChf1 + a) / 12, ToInt32(okres_kredytowania.Text) - i - 1, -(ToDouble(kwota_kredytu_chf.Text)))))).ToString(".##"),
+
+        OdsetkiPln = (ToDecimal(kwota_kredytu_pln.Text) * (ToDecimal(ToDouble(l.Wibor3M) + a) / 12)).ToString(".##"),
+
+        KapitalPln = (l.RatePlnChf * (ToDecimal(Finansial.Pmt((l.Libor3MChf1 + a) / 12, ToInt32(okres_kredytowania.Text) - i - 1, -(ToDouble(kwota_kredytu_chf.Text))))) -
+        (ToDecimal(kwota_kredytu_pln.Text) * ToDecimal((ToDouble(l.Wibor3M) + a) / 12))).ToString(".##"),
+
         SaldokapitaluPln = (ToDecimal(kwota_kredytu_pln.Text) -
-        (System.Decimal.Round(decimal.Round(ToDecimal(l.RatePlnChf), 2) * (ToDecimal(Finansial.Pmt((ToDouble(l.Libor3MChf) + 0.02) / 12, ToInt32(okres_kredytowania.Text) - i - 1, -(ToDouble(kwota_kredytu_chf.Text))))), 2) -
-        System.Decimal.Round(ToDecimal(kwota_kredytu_pln.Text) * ToDecimal((ToDouble(l.Wibor3M) + 0.02) / 12), 2))),
+        (l.RatePlnChf * (ToDecimal(Finansial.Pmt((l.Libor3MChf1 + a) / 12, ToInt32(okres_kredytowania.Text) - i - 1, -(ToDouble(kwota_kredytu_chf.Text)))))) -
+        (ToDecimal(kwota_kredytu_pln.Text) * ToDecimal((ToDouble(l.Wibor3M) + a) / 12))).ToString(".##"),
 
 
       }).ToList();
@@ -140,15 +155,21 @@ namespace Credit
     private void Creditor_Load(object sender, EventArgs e)
     {
 
-      string resxFile = @".\Months.resx";
-      using (ResXResourceReader resxReader = new ResXResourceReader(resxFile))
-      {
-        foreach (DictionaryEntry entry in resxReader)
-        {
+      //string resxFile = @".\Months.resx";
+      //using (ResXResourceReader resxReader = new ResXResourceReader(resxFile))
+      //{
+      //  foreach (DictionaryEntry entry in resxReader)
+      //  {
+      //    this.mc_aktualny.Items.AddRange(new object[] { entry.Value });
+      //    this.mc_uruchomienia.Items.AddRange(new object[] { entry.Value });
+      //  }
+      //}
 
-          this.mc_aktualny.Items.AddRange(new object[] { entry.Value });
-          this.mc_uruchomienia.Items.AddRange(new object[] { entry.Value });
-        }
+      var months = Enum.GetNames(typeof(MonthList)).ToArray();
+      foreach (var month in months)
+      {
+        this.mc_aktualny.Items.Add(Months.ResourceManager.GetString(month));
+        this.mc_uruchomienia.Items.Add(Months.ResourceManager.GetString(month)); 
       }
     }
   }

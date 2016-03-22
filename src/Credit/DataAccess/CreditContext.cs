@@ -10,6 +10,6 @@ namespace Credit.DataAccess
     }
 
     public DbSet<LiborWibor> LiborWibor { get; set; }
-   // public DbSet<WiborLibor> WiborLibor { get; set; }
+  
   }
 }
