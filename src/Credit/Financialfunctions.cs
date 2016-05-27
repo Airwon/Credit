@@ -5,17 +5,7 @@ namespace Credit
   public class Financialfunctions
   {
 
-    //public  double PMT1(double yearlyInterestRate, int totalNumberOfMonths, double loanAmount)
-    //{
-    //  var rate = (double)yearlyInterestRate / 100 / 12;
-    //  var denominator = Math.Pow((1 + rate), totalNumberOfMonths) - 1;
-    //  return (rate + (rate / denominator)) * loanAmount;
-    //}
-
-
-
-
-    public double Ppmt(double rate, int paymentPeriod, int numberOfPayments, double amount)
+    public double Ppmt(double rate, int paymentPeriod, int numberOfPayments, double amount) //The Excel PPMT function calculates the payment on the principal
     {
       double payment0 = Pmt(rate, numberOfPayments, amount);
       double paymetnt1 = IPmt(rate, paymentPeriod, numberOfPayments, amount);
@@ -23,7 +13,7 @@ namespace Credit
     }
 
 
-    public double Pmt(double rate, int numberOfPayments, double amount)
+    public double Pmt(double rate, int numberOfPayments, double amount) //kwotę spłaty pożyczki
 
     {
 
@@ -37,7 +27,7 @@ namespace Credit
 
 
 
-    public double FV(double rate, int numberOfPayments, double payment, double amount)
+    public double FV(double rate, int numberOfPayments, double payment, double amount) //futurevalue
 
     {
 
@@ -49,7 +39,7 @@ namespace Credit
 
     }
 
-    public double IPmt(double rate, int paymentPeriod, int numberOfPayments, double amount)
+    public double IPmt(double rate, int paymentPeriod, int numberOfPayments, double amount) //Oblicza amortyzację okresową dla inwestycji przy założeniu regularnych płatności i stałej stopy oprocentowania.
 
     {
 
